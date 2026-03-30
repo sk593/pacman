@@ -1,0 +1,12 @@
+{
+  "extensions": {
+    "radius": "br:biceptypes.azurecr.io/radius:latest",
+    "aws": "br:biceptypes.azurecr.io/aws:latest",
+    "blobStores": "./blobStores-extension.tgz",
+    "containers": "./containers-extension.tgz",
+    "functions": "./functions-extension.tgz",
+    "models": "./models-extension.tgz",
+    "postgreSqlDatabases": "./postgreSqlDatabases-extension.tgz",
+    "redisCaches": "./redisCaches-extension.tgz"
+  }
+}

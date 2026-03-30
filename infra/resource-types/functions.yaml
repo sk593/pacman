@@ -1,0 +1,63 @@
+namespace: Radius.Compute
+types:
+  functions:
+    description: |
+      The Radius.Compute/functions Resource Type deploys a serverless function.
+      Locally this deploys a K8s CronJob; on Azure it provisions an Azure Function App.
+
+      ```
+      extension radius
+      param environment string
+
+      resource processor 'Radius.Compute/functions@2025-08-01-preview' = {
+        name: 'processor'
+        properties: {
+          application: myApplication.id
+          environment: environment
+          runtime: 'node'
+          image: 'myfunction:latest'
+        }
+      }
+      ```
+
+      To connect your function to other resources:
+      ```
+      connections: {
+        db: { source: database.id }
+        cache: { source: redis.id }
+      }
+      ```
+
+      The connection injects CONNECTION_<NAME>_<PROPERTY> environment variables,
+      same pattern as Radius.Compute/containers.
+    apiVersions:
+      '2025-08-01-preview':
+        schema:
+          type: object
+          properties:
+            environment:
+              type: string
+              description: "(Required) The Radius Environment ID."
+            application:
+              type: string
+              description: "(Optional) The Radius Application ID."
+            runtime:
+              type: string
+              enum: ['node', 'python', 'go', 'dotnet']
+              description: "(Optional) The function runtime. Defaults to 'node'."
+            image:
+              type: string
+              description: "(Required) The container image for the function."
+            schedule:
+              type: string
+              description: "(Optional) Cron schedule expression. Defaults to every 10 seconds."
+            connections:
+              type: object
+              description: "(Optional) Connections to other Radius resources."
+              additionalProperties:
+                type: object
+                properties:
+                  source:
+                    type: string
+                    description: "The resource ID of the connection source."
+          required: [environment, image]

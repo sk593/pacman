@@ -1,0 +1,28 @@
+# Git
+.git/
+.gitignore
+
+# Docs
+specs/
+.specify/
+*.md
+
+# Node
+node_modules/
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
+
+# Build artifacts
+coverage/
+*.tmp

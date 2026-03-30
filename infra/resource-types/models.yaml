@@ -1,0 +1,57 @@
+namespace: Radius.AI
+types:
+  models:
+    description: |
+      The Radius.AI/models Resource Type provisions an AI model endpoint.
+      Locally this deploys an Ollama instance; on Azure it provisions Azure OpenAI.
+
+      ```
+      extension radius
+      param environment string
+
+      resource aiModel 'Radius.AI/models@2025-08-01-preview' = {
+        name: 'aiModel'
+        properties: {
+          application: myApplication.id
+          environment: environment
+          model: 'gpt-4o-mini'
+        }
+      }
+      ```
+
+      To connect your container, create a connection:
+      ```
+      connections: {
+        ai: {
+          source: aiModel.id
+        }
+      }
+      ```
+
+      The connection injects:
+      - CONNECTION_AI_ENDPOINT
+      - CONNECTION_AI_MODEL
+      - CONNECTION_AI_APIKEY
+    apiVersions:
+      '2025-08-01-preview':
+        schema:
+          type: object
+          properties:
+            environment:
+              type: string
+              description: "(Required) The Radius Environment ID."
+            application:
+              type: string
+              description: "(Optional) The Radius Application ID."
+            model:
+              type: string
+              description: "(Optional) The AI model to deploy. Defaults to 'gpt-4o-mini'."
+            endpoint:
+              type: string
+              description: The HTTP endpoint for the AI model API.
+              readOnly: true
+            apiKey:
+              type: string
+              description: The API key for authenticating with the model endpoint.
+              readOnly: true
+          required: [environment]

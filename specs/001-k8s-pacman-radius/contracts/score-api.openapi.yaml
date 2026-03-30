@@ -1,0 +1,176 @@
+openapi: "3.1.0"
+info:
+  title: Pac-Man Score API
+  version: "1.0.0"
+  description: Backend API for the cloud-native Pac-Man high-score leaderboard.
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+  - url: http://backend-http.{namespace}.svc.cluster.local:8080
+    description: In-cluster (Radius-deployed)
+
+paths:
+  /api/scores:
+    get:
+      operationId: getLeaderboard
+      summary: Get top-10 high scores
+      description: Returns the top 10 scores in descending order.
+      responses:
+        "200":
+          description: Leaderboard retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HighScoreEntry"
+                maxItems: 10
+        "503":
+          description: Database unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      operationId: submitScore
+      summary: Submit a new high score
+      description: |
+        Submit a player name and score after game-over.
+        Rate-limited to 10 requests per minute per client IP.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScoreSubmission"
+      responses:
+        "201":
+          description: Score saved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HighScoreEntry"
+        "400":
+          description: Validation error (invalid name or score).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded.
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds until the client can retry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Database unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /healthz:
+    get:
+      operationId: healthCheck
+      summary: Liveness probe
+      description: Returns 200 if the process is alive. Used by Kubernetes liveness probe.
+      responses:
+        "200":
+          description: Healthy.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /readyz:
+    get:
+      operationId: readinessCheck
+      summary: Readiness probe
+      description: Returns 200 if the database connection is healthy. Used by Kubernetes readiness probe.
+      responses:
+        "200":
+          description: Ready.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+        "503":
+          description: Not ready (database connection failed).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+components:
+  schemas:
+    ScoreSubmission:
+      type: object
+      required:
+        - player_name
+        - score
+        - level_reached
+      properties:
+        player_name:
+          type: string
+          minLength: 1
+          maxLength: 10
+          pattern: "^[\\x20-\\x7E]{1,10}$"
+          description: Player's display name (1–10 printable ASCII characters).
+          example: "PAC-FAN"
+        score:
+          type: integer
+          minimum: 1
+          description: Final game score (positive integer).
+          example: 15230
+        level_reached:
+          type: integer
+          minimum: 1
+          description: Highest level reached.
+          example: 3
+
+    HighScoreEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique score identifier.
+          example: 42
+        player_name:
+          type: string
+          example: "PAC-FAN"
+        score:
+          type: integer
+          example: 15230
+        level_reached:
+          type: integer
+          example: 3
+        created_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of when the score was submitted.
+          example: "2026-02-20T14:30:00Z"
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+            - not ready
+          example: "ok"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Human-readable error message.
+          example: "player_name must be 1-10 printable characters"

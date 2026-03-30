@@ -1,0 +1,56 @@
+namespace: Radius.Data
+types:
+  redisCaches:
+    description: |
+      The Radius.Data/redisCaches Resource Type deploys a Redis cache instance.
+
+      ```
+      extension radius
+      param environment string
+
+      resource cache 'Radius.Data/redisCaches@2025-08-01-preview' = {
+        name: 'cache'
+        properties: {
+          application: myApplication.id
+          environment: environment
+        }
+      }
+      ```
+
+      To connect your container, create a connection:
+      ```
+      connections: {
+        cache: {
+          source: cache.id
+        }
+      }
+      ```
+
+      The connection injects:
+      - CONNECTION_CACHE_HOST
+      - CONNECTION_CACHE_PORT
+      - CONNECTION_CACHE_PASSWORD (if auth is enabled)
+    apiVersions:
+      '2025-08-01-preview':
+        schema:
+          type: object
+          properties:
+            environment:
+              type: string
+              description: "(Required) The Radius Environment ID."
+            application:
+              type: string
+              description: "(Optional) The Radius Application ID."
+            host:
+              type: string
+              description: The host name used to connect to Redis.
+              readOnly: true
+            port:
+              type: integer
+              description: The port number used to connect to Redis.
+              readOnly: true
+            password:
+              type: string
+              description: The password for connecting to Redis.
+              readOnly: true
+          required: [environment]

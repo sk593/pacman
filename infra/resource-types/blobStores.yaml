@@ -1,0 +1,61 @@
+namespace: Radius.Storage
+types:
+  blobStores:
+    description: |
+      The Radius.Storage/blobStores Resource Type provisions object storage.
+      Locally this deploys a MinIO instance; on Azure it provisions Azure Blob Storage.
+
+      ```
+      extension radius
+      param environment string
+
+      resource store 'Radius.Storage/blobStores@2025-08-01-preview' = {
+        name: 'store'
+        properties: {
+          application: myApplication.id
+          environment: environment
+        }
+      }
+      ```
+
+      To connect your container, create a connection:
+      ```
+      connections: {
+        storage: {
+          source: store.id
+        }
+      }
+      ```
+
+      The connection injects:
+      - CONNECTION_STORAGE_ENDPOINT
+      - CONNECTION_STORAGE_BUCKET
+      - CONNECTION_STORAGE_ACCESSKEY
+      - CONNECTION_STORAGE_SECRETKEY
+    apiVersions:
+      '2025-08-01-preview':
+        schema:
+          type: object
+          properties:
+            environment:
+              type: string
+              description: "(Required) The Radius Environment ID."
+            application:
+              type: string
+              description: "(Optional) The Radius Application ID."
+            bucket:
+              type: string
+              description: "(Optional) The bucket/container name. Defaults to resource name."
+            endpoint:
+              type: string
+              description: The endpoint URL for the object store.
+              readOnly: true
+            accessKey:
+              type: string
+              description: The access key for authentication.
+              readOnly: true
+            secretKey:
+              type: string
+              description: The secret key for authentication.
+              readOnly: true
+          required: [environment]
