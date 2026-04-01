@@ -70,16 +70,14 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Configure Azure provider for Radius
-        if: ${{ secrets.AZURE_CLIENT_SECRET != '' }}
+      - name: Register Azure credentials with Radius
         run: |
-          rad credential register azure sp \
+          rad credential register azure wi \
             --client-id "${{ vars.AZURE_CLIENT_ID }}" \
-            --client-secret "${{ secrets.AZURE_CLIENT_SECRET }}" \
             --tenant-id "${{ vars.AZURE_TENANT_ID }}"
           rad env update "$ENVIRONMENT" \
             --azure-subscription-id "${{ vars.AZURE_SUBSCRIPTION_ID }}" \
-            --azure-resource-group "${{ vars.RADIUS_RESOURCE_GROUP }}"
+            --azure-resource-group "${{ vars.AZURE_RESOURCE_GROUP }}"
 
       - name: Deploy application
         run: |
