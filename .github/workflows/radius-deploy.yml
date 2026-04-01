@@ -59,9 +59,11 @@ jobs:
 
       - name: Configure Radius environment
         run: |
-          rad workspace create kubernetes default --group default --environment "$ENVIRONMENT"
+          rad workspace create kubernetes default
           rad group create default
+          rad group switch default
           rad env create "$ENVIRONMENT" --namespace default
+          rad env switch "$ENVIRONMENT"
 
       - name: Azure Login (OIDC)
         uses: azure/login@v2
