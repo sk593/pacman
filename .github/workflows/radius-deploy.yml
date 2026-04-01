@@ -60,6 +60,7 @@ jobs:
       - name: Configure Radius environment
         run: |
           rad group create default
+          rad group switch default
           rad env create "$ENVIRONMENT" --namespace default
           rad env switch "$ENVIRONMENT"
 
