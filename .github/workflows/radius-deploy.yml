@@ -65,21 +65,19 @@ jobs:
           rad env create "$ENVIRONMENT" --namespace default
           rad env switch "$ENVIRONMENT"
 
-      - name: Azure Login (OIDC)
-        uses: azure/login@v2
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          role-to-assume: ${{ vars.AWS_IAM_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Register Azure credentials with Radius
+      - name: Register AWS credentials with Radius
         run: |
-          rad credential register azure wi \
-            --client-id "${{ vars.AZURE_CLIENT_ID }}" \
-            --tenant-id "${{ vars.AZURE_TENANT_ID }}"
+          rad credential register aws irsa \
+            --iam-role "${{ vars.AWS_IAM_ROLE_ARN }}"
           rad env update "$ENVIRONMENT" \
-            --azure-subscription-id "${{ vars.AZURE_SUBSCRIPTION_ID }}" \
-            --azure-resource-group "${{ vars.AZURE_RESOURCE_GROUP }}"
+            --aws-region "${{ vars.AWS_REGION }}" \
+            --aws-account-id "${{ vars.AWS_ACCOUNT_ID }}"
 
       - name: Deploy application
         run: |
